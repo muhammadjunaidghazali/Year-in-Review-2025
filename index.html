@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Year of Two Breaths | Hyper-Interactive Ledger</title>
+    <title>The Year of Two Breaths | Interactive Story Book</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Space+Grotesk:wght@300;500;700&family=Playfair+Display:italic,wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #020203;
+            --bg-dark: #050508;
             --cyber-lime: #00ffaa;
             --acid-magenta: #ff0055;
             --solar-gold: #ffcc00;
@@ -19,303 +19,331 @@
             background-color: var(--bg-dark);
             font-family: 'Space Grotesk', sans-serif;
             color: #ffffff;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         .script-font { font-family: 'Dancing Script', cursive; }
-        
+        .serif-font { font-family: 'Playfair Display', serif; }
+
         /* Neon Mesh Background */
         .mesh-gradient {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1;
             background: 
-                radial-gradient(at 0% 0%, rgba(0, 255, 170, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(255, 0, 85, 0.1) 0px, transparent 50%),
-                radial-gradient(at 50% 100%, rgba(255, 204, 0, 0.1) 0px, transparent 50%);
-            filter: blur(60px);
+                radial-gradient(at 10% 10%, rgba(0, 255, 170, 0.1) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(255, 0, 85, 0.08) 0px, transparent 50%),
+                radial-gradient(at 50% 90%, rgba(255, 204, 0, 0.1) 0px, transparent 50%);
+            filter: blur(80px);
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
+        .book-container {
+            perspective: 2000px;
+            height: 80vh;
+            max-width: 1000px;
+            margin: auto;
+            position: relative;
+        }
+
+        .glass-page {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 3rem;
+            display: flex;
+            opacity: 0;
+            pointer-events: none;
+            transform: rotateY(10deg) translateX(20px);
         }
 
-        /* Ribbon Glow */
+        .glass-page.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: rotateY(0deg) translateX(0);
+            z-index: 10;
+        }
+
+        /* Ribbon Styles */
         .ribbon-path {
             fill: none;
             stroke-width: 6;
             stroke-linecap: round;
-            filter: drop-shadow(0 0 12px rgba(0, 255, 170, 0.4));
+            filter: drop-shadow(0 0 10px rgba(0, 255, 170, 0.3));
+            transition: stroke-dashoffset 2s ease;
         }
 
-        .data-node {
-            transition: all 0.3s ease;
-            cursor: pointer;
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.7rem;
         }
 
-        .data-node:hover {
-            r: 10;
-            filter: brightness(1.5) drop-shadow(0 0 10px currentColor);
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--electric-cyan);
+            color: var(--electric-cyan);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
         }
 
-        /* Tooltip / HUD */
-        #hud {
-            position: fixed;
-            pointer-events: none;
-            z-index: 1000;
-            transition: opacity 0.2s, transform 0.1s ease-out;
-            display: none;
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
         }
 
-        @keyframes scan {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
+        .chapter-badge {
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            color: var(--electric-cyan);
+            border: 1px solid var(--electric-cyan);
+            padding: 4px 12px;
+            border-radius: 99px;
+            display: inline-block;
+            margin-bottom: 1.5rem;
         }
-        .scanline-box::after {
-            content: "";
+
+        .page-indicator {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 2px;
-            background: rgba(255,255,255,0.2);
-            animation: scan 2s linear infinite;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
         }
 
-        .neon-text-cyan { color: var(--electric-cyan); text-shadow: 0 0 10px var(--electric-cyan); }
-        .neon-text-gold { color: var(--solar-gold); text-shadow: 0 0 10px var(--solar-gold); }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: var(--electric-cyan);
+            box-shadow: 0 0 10px var(--electric-cyan);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-page {
+                flex-direction: column;
+                padding: 1.5rem;
+                overflow-y: auto;
+            }
+            .book-container { height: 90vh; }
+        }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-6 flex flex-col items-center justify-center min-h-screen">
     <div class="mesh-gradient"></div>
 
-    <!-- HUD Tooltip -->
-    <div id="hud" class="glass-card p-4 rounded-xl min-w-[240px] border-l-4 border-l-[var(--electric-cyan)] shadow-2xl">
-        <div class="flex justify-between items-start mb-2">
-            <span id="hud-date" class="text-[10px] font-mono text-gray-400 uppercase tracking-widest">Date</span>
-            <span id="hud-mood" class="text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-white uppercase tracking-tighter">Mood</span>
+    <div class="book-container w-full">
+        <!-- Page 1: Cover -->
+        <div class="glass-page active" id="page-0">
+            <div class="w-full flex flex-col items-center justify-center text-center space-y-6">
+                <div class="chapter-badge">INTRODUCTION</div>
+                <h1 class="serif-font text-7xl md:text-8xl font-bold tracking-tighter italic text-white">The Year of Two Breaths</h1>
+                <p class="script-font text-3xl text-cyan-400">A Digital Story Book // 2025</p>
+                <p class="text-sm font-light text-gray-400 max-w-md uppercase tracking-[0.3em]">Written and lived by Muhammad Junaid</p>
+                <div class="pt-8 animate-bounce">
+                    <button onclick="nextPage()" class="nav-btn">Open Story</button>
+                </div>
+            </div>
         </div>
-        <p id="hud-text" class="text-sm font-medium leading-snug">Hover the line to decrypt entries...</p>
-        <div class="mt-3 flex gap-1">
-            <div id="tag-wagma" class="text-[8px] border border-white/20 px-1 rounded opacity-0">#Wagma</div>
-            <div id="tag-juju" class="text-[8px] border border-white/20 px-1 rounded opacity-0">#Juju</div>
+
+        <!-- Page 2: The Ascent -->
+        <div class="glass-page" id="page-1">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 w-full h-full">
+                <div class="flex flex-col justify-center space-y-4">
+                    <div class="chapter-badge">CHAPTER I: THE ASCENT</div>
+                    <h2 class="serif-font text-4xl font-bold italic">The Scholar's Path</h2>
+                    <p class="text-gray-300 leading-relaxed">
+                        The year began with the steady rhythm of achievement. From the halls of <span class="text-cyan-400">NUST</span> to the rigors of the <span class="text-cyan-400">PhD</span>, every step felt calculated and certain. 
+                    </p>
+                    <p class="script-font text-2xl text-cyan-200">"Suggested to be the role model for undergrads... Alhumdulilah."</p>
+                    <div class="pt-4 flex gap-4">
+                        <span class="text-[10px] font-mono border border-white/20 px-2 py-1 rounded">#Succession</span>
+                        <span class="text-[10px] font-mono border border-white/20 px-2 py-1 rounded">#NUST</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center">
+                    <svg viewBox="0 0 400 400" class="w-full max-w-[300px]">
+                        <path d="M 50 350 Q 150 250 200 300 T 350 150" fill="none" stroke="var(--cyber-lime)" stroke-width="8" stroke-linecap="round" filter="drop-shadow(0 0 10px var(--cyber-lime))" />
+                        <circle cx="200" cy="300" r="10" fill="white" class="animate-pulse" />
+                        <text x="220" y="310" class="text-[10px] font-mono fill-gray-400">NSHS Bestowed Title</text>
+                    </svg>
+                </div>
+            </div>
         </div>
+
+        <!-- Page 3: The Fracture -->
+        <div class="glass-page" id="page-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 w-full h-full">
+                <div class="flex flex-col justify-center space-y-4">
+                    <div class="chapter-badge !text-pink-500 !border-pink-500">CHAPTER II: THE SILENCE</div>
+                    <h2 class="serif-font text-4xl font-bold italic text-pink-500">The Dark Valley</h2>
+                    <p class="text-gray-300 leading-relaxed">
+                        Mid-August brought a fracture. A sudden descent into a deep valley where breath was no longer guaranteed. The world turned <span class="text-pink-400">gray</span> and static.
+                    </p>
+                    <p class="script-font text-2xl text-pink-300">"The Silence. A battle for every breath... Recovery is a long road."</p>
+                    <div class="pt-4">
+                        <span class="text-[10px] font-mono border border-red-500/40 px-2 py-1 rounded text-red-400">#TheFracture</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center">
+                    <svg viewBox="0 0 400 400" class="w-full max-w-[300px]">
+                        <path d="M 50 100 Q 100 150 150 350 Q 200 380 250 320" fill="none" stroke="var(--acid-magenta)" stroke-width="8" stroke-linecap="round" filter="drop-shadow(0 0 10px var(--acid-magenta))" />
+                        <path d="M 140 330 L 160 370 M 150 340 L 170 360" stroke="white" stroke-width="2" opacity="0.5" />
+                        <text x="170" y="380" class="text-[10px] font-mono fill-red-500 uppercase tracking-widest">Pain Point</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 4: Rebirth -->
+        <div class="glass-page" id="page-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 w-full h-full">
+                <div class="flex flex-col justify-center space-y-4">
+                    <div class="chapter-badge !text-yellow-400 !border-yellow-400">CHAPTER III: THE PIVOT</div>
+                    <h2 class="serif-font text-4xl font-bold italic text-yellow-400">The Golden Breath</h2>
+                    <p class="text-gray-300 leading-relaxed">
+                        August 31st. At the absolute nadir of the valley, a spark of gold. <span class="text-yellow-400 font-bold">Juju</span> arrived, and the reason to stay became undeniable.
+                    </p>
+                    <p class="script-font text-3xl text-yellow-200">"Juju arrives. Allah has given me everything I wanted... Alhumdulilah."</p>
+                    <div class="pt-4 flex gap-4">
+                        <span class="text-[10px] font-mono border border-yellow-500/40 px-2 py-1 rounded text-yellow-400">#Aug31</span>
+                        <span class="text-[10px] font-mono border border-yellow-500/40 px-2 py-1 rounded text-yellow-400">#NewLife</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center">
+                    <svg viewBox="0 0 400 400" class="w-full max-w-[300px]">
+                        <circle cx="200" cy="200" r="80" fill="url(#goldRadial)" opacity="0.2" class="animate-pulse" />
+                        <circle cx="200" cy="200" r="10" fill="var(--solar-gold)" filter="url(#hyper-glow)" />
+                        <path d="M 200 200 Q 250 150 350 100" fill="none" stroke="var(--solar-gold)" stroke-width="10" stroke-linecap="round" />
+                        <defs>
+                            <radialGradient id="goldRadial">
+                                <stop offset="0%" stop-color="var(--solar-gold)" />
+                                <stop offset="100%" stop-color="transparent" />
+                            </radialGradient>
+                            <filter id="hyper-glow">
+                                <feGaussianBlur stdDeviation="5" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        <text x="210" y="230" class="script-font text-2xl fill-white">Juju</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 5: Closure -->
+        <div class="glass-page" id="page-4">
+            <div class="w-full flex flex-col items-center justify-center text-center space-y-8">
+                <div class="chapter-badge">EPILOGUE</div>
+                <h2 class="serif-font text-5xl font-bold italic">A Shared Horizon</h2>
+                <p class="text-gray-400 max-w-xl leading-relaxed">
+                    The ribbon is no longer a single thread. It is a dual path, rising steadily toward the stars. The year closes not just with achievement, but with <span class="text-white">Contentment</span>.
+                </p>
+                <div class="flex gap-12">
+                    <div class="text-center">
+                        <p class="script-font text-4xl text-cyan-400">Wagma</p>
+                        <p class="text-[8px] font-mono text-gray-500 uppercase">CONSTANT</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="script-font text-4xl text-yellow-400">Juju</p>
+                        <p class="text-[8px] font-mono text-gray-500 uppercase">REBIRTH</p>
+                    </div>
+                </div>
+                <div class="pt-8">
+                    <button onclick="goToPage(0)" class="nav-btn">Read Again</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="page-indicator" id="dots"></div>
     </div>
 
-    <main class="max-w-7xl mx-auto space-y-8">
-        <header class="flex flex-col md:flex-row justify-between items-end">
-            <div class="space-y-1">
-                <div class="flex gap-2">
-                    <span class="text-[10px] font-mono text-cyan-400 border border-cyan-400/30 px-2 rounded">v2.1 // 2025_REFRESH</span>
-                </div>
-                <h1 class="serif-font text-6xl font-bold tracking-tighter italic">The Year of Two Breaths</h1>
-                <p class="text-xs font-mono text-gray-500 uppercase tracking-[0.4em]">Interactive Life Ledger // Decrypting 2025</p>
-            </div>
-            <div class="text-right hidden md:block">
-                <p class="text-[10px] font-mono text-gray-600">PRIMARY_IDENTITY: MUHAMMAD_JUNAID</p>
-                <p class="text-[10px] font-mono text-gray-600">STORY_ENGINE: NARRATIVE_V4.1</p>
-            </div>
-        </header>
-
-        <!-- Main Interaction Area -->
-        <div class="glass-card rounded-[3rem] p-12 relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-magenta-500/5 opacity-50"></div>
-            
-            <svg id="timeline-svg" viewBox="0 0 1000 500" class="w-full h-auto relative z-10 overflow-visible">
-                <defs>
-                    <linearGradient id="brightGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:var(--cyber-lime);stop-opacity:1" />
-                        <stop offset="65%" style="stop-color:var(--electric-cyan);stop-opacity:1" />
-                        <stop offset="75%" style="stop-color:var(--acid-magenta);stop-opacity:1" />
-                        <stop offset="82%" style="stop-color:var(--solar-gold);stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#ffffff;stop-opacity:1" />
-                    </linearGradient>
-                    <filter id="hyper-glow">
-                        <feGaussianBlur stdDeviation="6" result="blur" />
-                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                    </filter>
-                </defs>
-
-                <!-- Grid -->
-                <g id="grid" opacity="0.1"></g>
-
-                <!-- Master Path -->
-                <path id="master-path" d="M 0 300 Q 150 220 300 280 T 600 200 L 700 250 Q 750 480 800 450 Q 820 150 900 120 T 1100 80" 
-                      stroke="url(#brightGrad)" class="ribbon-path" filter="url(#hyper-glow)" />
-
-                <!-- Nodes injected by JS -->
-                <g id="node-layer"></g>
-
-                <!-- Annotations -->
-                <g class="font-mono text-[8px] fill-gray-500">
-                    <text x="50" y="480">01 // START 2025</text>
-                    <text x="300" y="480">04 // SUCCESSION</text>
-                    <text x="750" y="480" class="fill-red-500">08 // THE FRACTURE</text>
-                    <text x="830" y="480" class="fill-yellow-400 font-bold">08.31 // REBIRTH</text>
-                    <text x="950" y="480">12 // CLOSURE</text>
-                </g>
-            </svg>
-
-            <!-- Interactive Hint -->
-            <div class="absolute top-8 left-1/2 -translate-x-1/2 text-[10px] font-mono text-white/40 uppercase tracking-[0.5em] animate-pulse">
-                Move cursor over the line to browse memories
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="glass-card p-6 rounded-3xl col-span-1">
-                <h4 class="text-[10px] font-mono text-gray-500 mb-4 uppercase">Horizon Identity</h4>
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center script-font text-2xl text-cyan-400">W</div>
-                    <div>
-                        <p class="text-sm font-bold">Wagma</p>
-                        <p class="text-[10px] text-gray-500">CONSTANT HORIZON // 100% UPTIME</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4 mt-4">
-                    <div class="w-12 h-12 rounded-full bg-yellow-500/20 border border-yellow-400 flex items-center justify-center script-font text-2xl text-yellow-400">J</div>
-                    <div>
-                        <p class="text-sm font-bold">Juju</p>
-                        <p class="text-[10px] text-gray-500">MINTED AUG 31 // NEW THREAD</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass-card p-6 rounded-3xl col-span-2 overflow-hidden relative scanline-box">
-                <h4 class="text-[10px] font-mono text-gray-500 mb-4 uppercase">Direct Logic Feed</h4>
-                <p id="live-quote" class="script-font text-2xl md:text-3xl text-white/80 transition-opacity duration-500">
-                    "Allah has given me everything I wanted... Alhumdulilah."
-                </p>
-            </div>
-        </div>
-    </main>
+    <div class="fixed bottom-10 left-1/2 -translate-x-1/2 flex gap-8 z-50">
+        <button id="prevBtn" onclick="prevPage()" class="nav-btn" disabled>&larr; Back</button>
+        <button id="nextBtn" onclick="nextPage()" class="nav-btn">Next &rarr;</button>
+    </div>
 
     <script>
-        // High Contrast Data from User History (Updated for 2025 context)
-        const timelineEntries = [
-            { x: 50, date: "Jan 1", mood: "Optimistic", text: "I'm feeling optimistic for the year ahead.", tags: ["Wagma", "Juju"] },
-            { x: 150, date: "Feb 27", mood: "Enthusiastic", text: "Meow meow! The Rector is love.", tags: ["Wagma"] },
-            { x: 250, date: "Mar 17", mood: "Successful", text: "My Bugu Did it! We love you Allah.", tags: ["Wagma"] },
-            { x: 350, date: "Apr 15", mood: "Productive", text: "Great piece of work done Alhumdulilah.", tags: ["Work"] },
-            { x: 450, date: "May 13", mood: "Ecstatic", text: "Suggested to be the role model for undergrads.", tags: ["Work"] },
-            { x: 550, date: "Jun 26", mood: "Empowered", text: "Bestowed title of 'The Gentleman of NSHS'.", tags: ["Work"] },
-            { x: 600, date: "Jul 10", mood: "Accomplished", text: "Won the AI championships at NUST!", tags: ["Work"] },
-            { x: 680, date: "Aug 12", mood: "Exhilarated", text: "What an amazing opportunity thank you Allah.", tags: ["Wagma", "Juju"] },
-            { x: 740, date: "Aug 16", mood: "Anguished", text: "It's no use... My brain hurts.", tags: ["Fracture"] },
-            { x: 780, date: "Aug 26", mood: "Tranquil", text: "Getting better step by step. Alhumdulilah first namaz.", tags: ["Recovery"] },
-            { x: 820, date: "Aug 31", mood: "Ecstatic", text: "Juju arrives. The reason to stay.", tags: ["Wagma", "Juju"] },
-            { x: 880, date: "Sep 6", mood: "Exhilarated", text: "Juju Aqeeqa done on 12 Rabiul Awal. Masha Allah.", tags: ["Wagma", "Juju"] },
-            { x: 920, date: "Oct 15", mood: "Grateful", text: "Thank you for all the family and friends.", tags: ["Wagma", "Juju"] },
-            { x: 980, date: "Dec 30", mood: "Content", text: "I’m feeling content with what we have built.", tags: ["Wagma", "Juju"] }
-        ];
+        let currentPage = 0;
+        const totalPages = 5;
 
-        const svg = document.getElementById('timeline-svg');
-        const nodeLayer = document.getElementById('node-layer');
-        const hud = document.getElementById('hud');
-        const masterPath = document.getElementById('master-path');
-
-        function createGrid() {
-            const gridG = document.getElementById('grid');
-            for(let i=0; i<=1000; i+=100) {
-                const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                l.setAttribute("x1", i); l.setAttribute("y1", 0);
-                l.setAttribute("x2", i); l.setAttribute("y2", 500);
-                l.setAttribute("stroke", "white");
-                gridG.appendChild(l);
+        function initNavigation() {
+            const dotsContainer = document.getElementById('dots');
+            for(let i=0; i<totalPages; i++) {
+                const dot = document.createElement('div');
+                dot.className = `dot ${i === 0 ? 'active' : ''}`;
+                dot.id = `dot-${i}`;
+                dotsContainer.appendChild(dot);
             }
         }
 
-        function createNodes() {
-            timelineEntries.forEach((entry, idx) => {
-                const point = getPathYAtX(entry.x);
-                
-                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                circle.setAttribute("cx", entry.x);
-                circle.setAttribute("cy", point.y);
-                circle.setAttribute("r", "4");
-                circle.setAttribute("class", "data-node");
-                
-                // Set color based on section
-                let color = "var(--cyber-lime)";
-                if (entry.x > 700) color = "var(--acid-magenta)";
-                if (entry.x >= 820) color = "var(--solar-gold)";
-                
-                circle.setAttribute("fill", color);
-                
-                circle.addEventListener('mouseenter', (e) => showHUD(e, entry, color));
-                circle.addEventListener('mouseleave', hideHUD);
-                
-                nodeLayer.appendChild(circle);
-            });
-        }
-
-        function getPathYAtX(x) {
-            let low = 0;
-            let high = masterPath.getTotalLength();
-            while (low < high - 1) {
-                let mid = (low + high) / 2;
-                let p = masterPath.getPointAtLength(mid);
-                if (p.x < x) low = mid;
-                else high = mid;
+        function updateNavigation() {
+            // Update Pages
+            for(let i=0; i<totalPages; i++) {
+                const page = document.getElementById(`page-${i}`);
+                const dot = document.getElementById(`dot-${i}`);
+                if(i === currentPage) {
+                    page.classList.add('active');
+                    dot.classList.add('active');
+                } else {
+                    page.classList.remove('active');
+                    dot.classList.remove('active');
+                }
             }
-            return masterPath.getPointAtLength(low);
+
+            // Update Buttons
+            document.getElementById('prevBtn').disabled = currentPage === 0;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages - 1;
         }
 
-        function showHUD(e, data, color) {
-            hud.style.display = 'block';
-            hud.style.opacity = '1';
-            hud.style.borderLeftColor = color;
-            document.getElementById('hud-date').innerText = data.date;
-            document.getElementById('hud-mood').innerText = data.mood;
-            document.getElementById('hud-mood').style.backgroundColor = color + '44';
-            document.getElementById('hud-text').innerText = `"${data.text}"`;
-            
-            const tagWagma = document.getElementById('tag-wagma');
-            const tagJuju = document.getElementById('tag-juju');
-            tagWagma.style.opacity = data.tags.includes("Wagma") ? "1" : "0.2";
-            tagJuju.style.opacity = data.tags.includes("Juju") ? "1" : "0.2";
-
-            moveHUD(e);
+        function nextPage() {
+            if(currentPage < totalPages - 1) {
+                currentPage++;
+                updateNavigation();
+            }
         }
 
-        function moveHUD(e) {
-            const x = e.clientX + 20;
-            const y = e.clientY - 40;
-            hud.style.transform = `translate(${x}px, ${y}px)`;
+        function prevPage() {
+            if(currentPage > 0) {
+                currentPage--;
+                updateNavigation();
+            }
         }
 
-        function hideHUD() {
-            hud.style.opacity = '0';
-            setTimeout(() => { if(hud.style.opacity === '0') hud.style.display = 'none'; }, 200);
-        }
-
-        const liveQuote = document.getElementById('live-quote');
-        let quoteIdx = 0;
-        function cycleQuotes() {
-            liveQuote.style.opacity = 0;
-            setTimeout(() => {
-                liveQuote.innerText = `"${timelineEntries[quoteIdx].text}"`;
-                liveQuote.style.opacity = 1;
-                quoteIdx = (quoteIdx + 1) % timelineEntries.length;
-            }, 500);
+        function goToPage(index) {
+            currentPage = index;
+            updateNavigation();
         }
 
         window.onload = () => {
-            createGrid();
-            
-            const length = masterPath.getTotalLength();
-            masterPath.style.strokeDasharray = length;
-            masterPath.style.strokeDashoffset = length;
-            masterPath.getBoundingClientRect();
-            masterPath.style.transition = 'stroke-dashoffset 3s cubic-bezier(0.4, 0, 0.2, 1)';
-            masterPath.style.strokeDashoffset = '0';
-            
-            setTimeout(createNodes, 1000);
-            setInterval(cycleQuotes, 6000);
-            
-            window.addEventListener('mousemove', (e) => {
-                if(hud.style.display === 'block') moveHUD(e);
-            });
+            initNavigation();
         };
+
+        // Allow arrow key navigation
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowRight') nextPage();
+            if(e.key === 'ArrowLeft') prevPage();
+        });
     </script>
 </body>
 </html>
