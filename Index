@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Year of Two Breaths | Hyper-Interactive Ledger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Space+Grotesk:wght@300;500;700&family=Playfair+Display:italic,wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #020203;
+            --cyber-lime: #00ffaa;
+            --acid-magenta: #ff0055;
+            --solar-gold: #ffcc00;
+            --electric-cyan: #00d4ff;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            font-family: 'Space Grotesk', sans-serif;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .script-font { font-family: 'Dancing Script', cursive; }
+        
+        /* Neon Mesh Background */
+        .mesh-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(at 0% 0%, rgba(0, 255, 170, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(255, 0, 85, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(255, 204, 0, 0.1) 0px, transparent 50%);
+            filter: blur(60px);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Ribbon Glow */
+        .ribbon-path {
+            fill: none;
+            stroke-width: 6;
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 12px rgba(0, 255, 170, 0.4));
+        }
+
+        .data-node {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .data-node:hover {
+            r: 10;
+            filter: brightness(1.5) drop-shadow(0 0 10px currentColor);
+        }
+
+        /* Tooltip / HUD */
+        #hud {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            transition: opacity 0.2s, transform 0.1s ease-out;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        .scanline-box::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: rgba(255,255,255,0.2);
+            animation: scan 2s linear infinite;
+        }
+
+        .neon-text-cyan { color: var(--electric-cyan); text-shadow: 0 0 10px var(--electric-cyan); }
+        .neon-text-gold { color: var(--solar-gold); text-shadow: 0 0 10px var(--solar-gold); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="mesh-gradient"></div>
+
+    <!-- HUD Tooltip -->
+    <div id="hud" class="glass-card p-4 rounded-xl min-w-[240px] border-l-4 border-l-[var(--electric-cyan)] shadow-2xl">
+        <div class="flex justify-between items-start mb-2">
+            <span id="hud-date" class="text-[10px] font-mono text-gray-400 uppercase tracking-widest">Date</span>
+            <span id="hud-mood" class="text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-white uppercase tracking-tighter">Mood</span>
+        </div>
+        <p id="hud-text" class="text-sm font-medium leading-snug">Hover the line to decrypt entries...</p>
+        <div class="mt-3 flex gap-1">
+            <div id="tag-wagma" class="text-[8px] border border-white/20 px-1 rounded opacity-0">#Wagma</div>
+            <div id="tag-juju" class="text-[8px] border border-white/20 px-1 rounded opacity-0">#Juju</div>
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto space-y-8">
+        <header class="flex flex-col md:flex-row justify-between items-end">
+            <div class="space-y-1">
+                <div class="flex gap-2">
+                    <span class="text-[10px] font-mono text-cyan-400 border border-cyan-400/30 px-2 rounded">v2.1 // 2025_REFRESH</span>
+                </div>
+                <h1 class="serif-font text-6xl font-bold tracking-tighter italic">The Year of Two Breaths</h1>
+                <p class="text-xs font-mono text-gray-500 uppercase tracking-[0.4em]">Interactive Life Ledger // Decrypting 2025</p>
+            </div>
+            <div class="text-right hidden md:block">
+                <p class="text-[10px] font-mono text-gray-600">PRIMARY_IDENTITY: MUHAMMAD_JUNAID</p>
+                <p class="text-[10px] font-mono text-gray-600">STORY_ENGINE: NARRATIVE_V4.1</p>
+            </div>
+        </header>
+
+        <!-- Main Interaction Area -->
+        <div class="glass-card rounded-[3rem] p-12 relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-magenta-500/5 opacity-50"></div>
+            
+            <svg id="timeline-svg" viewBox="0 0 1000 500" class="w-full h-auto relative z-10 overflow-visible">
+                <defs>
+                    <linearGradient id="brightGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:var(--cyber-lime);stop-opacity:1" />
+                        <stop offset="65%" style="stop-color:var(--electric-cyan);stop-opacity:1" />
+                        <stop offset="75%" style="stop-color:var(--acid-magenta);stop-opacity:1" />
+                        <stop offset="82%" style="stop-color:var(--solar-gold);stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#ffffff;stop-opacity:1" />
+                    </linearGradient>
+                    <filter id="hyper-glow">
+                        <feGaussianBlur stdDeviation="6" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                </defs>
+
+                <!-- Grid -->
+                <g id="grid" opacity="0.1"></g>
+
+                <!-- Master Path -->
+                <path id="master-path" d="M 0 300 Q 150 220 300 280 T 600 200 L 700 250 Q 750 480 800 450 Q 820 150 900 120 T 1100 80" 
+                      stroke="url(#brightGrad)" class="ribbon-path" filter="url(#hyper-glow)" />
+
+                <!-- Nodes injected by JS -->
+                <g id="node-layer"></g>
+
+                <!-- Annotations -->
+                <g class="font-mono text-[8px] fill-gray-500">
+                    <text x="50" y="480">01 // START 2025</text>
+                    <text x="300" y="480">04 // SUCCESSION</text>
+                    <text x="750" y="480" class="fill-red-500">08 // THE FRACTURE</text>
+                    <text x="830" y="480" class="fill-yellow-400 font-bold">08.31 // REBIRTH</text>
+                    <text x="950" y="480">12 // CLOSURE</text>
+                </g>
+            </svg>
+
+            <!-- Interactive Hint -->
+            <div class="absolute top-8 left-1/2 -translate-x-1/2 text-[10px] font-mono text-white/40 uppercase tracking-[0.5em] animate-pulse">
+                Move cursor over the line to browse memories
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass-card p-6 rounded-3xl col-span-1">
+                <h4 class="text-[10px] font-mono text-gray-500 mb-4 uppercase">Horizon Identity</h4>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center script-font text-2xl text-cyan-400">W</div>
+                    <div>
+                        <p class="text-sm font-bold">Wagma</p>
+                        <p class="text-[10px] text-gray-500">CONSTANT HORIZON // 100% UPTIME</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 mt-4">
+                    <div class="w-12 h-12 rounded-full bg-yellow-500/20 border border-yellow-400 flex items-center justify-center script-font text-2xl text-yellow-400">J</div>
+                    <div>
+                        <p class="text-sm font-bold">Juju</p>
+                        <p class="text-[10px] text-gray-500">MINTED AUG 31 // NEW THREAD</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-3xl col-span-2 overflow-hidden relative scanline-box">
+                <h4 class="text-[10px] font-mono text-gray-500 mb-4 uppercase">Direct Logic Feed</h4>
+                <p id="live-quote" class="script-font text-2xl md:text-3xl text-white/80 transition-opacity duration-500">
+                    "Allah has given me everything I wanted... Alhumdulilah."
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // High Contrast Data from User History (Updated for 2025 context)
+        const timelineEntries = [
+            { x: 50, date: "Jan 1", mood: "Optimistic", text: "I'm feeling optimistic for the year ahead.", tags: ["Wagma", "Juju"] },
+            { x: 150, date: "Feb 27", mood: "Enthusiastic", text: "Meow meow! The Rector is love.", tags: ["Wagma"] },
+            { x: 250, date: "Mar 17", mood: "Successful", text: "My Bugu Did it! We love you Allah.", tags: ["Wagma"] },
+            { x: 350, date: "Apr 15", mood: "Productive", text: "Great piece of work done Alhumdulilah.", tags: ["Work"] },
+            { x: 450, date: "May 13", mood: "Ecstatic", text: "Suggested to be the role model for undergrads.", tags: ["Work"] },
+            { x: 550, date: "Jun 26", mood: "Empowered", text: "Bestowed title of 'The Gentleman of NSHS'.", tags: ["Work"] },
+            { x: 600, date: "Jul 10", mood: "Accomplished", text: "Won the AI championships at NUST!", tags: ["Work"] },
+            { x: 680, date: "Aug 12", mood: "Exhilarated", text: "What an amazing opportunity thank you Allah.", tags: ["Wagma", "Juju"] },
+            { x: 740, date: "Aug 16", mood: "Anguished", text: "It's no use... My brain hurts.", tags: ["Fracture"] },
+            { x: 780, date: "Aug 26", mood: "Tranquil", text: "Getting better step by step. Alhumdulilah first namaz.", tags: ["Recovery"] },
+            { x: 820, date: "Aug 31", mood: "Ecstatic", text: "Juju arrives. The reason to stay.", tags: ["Wagma", "Juju"] },
+            { x: 880, date: "Sep 6", mood: "Exhilarated", text: "Juju Aqeeqa done on 12 Rabiul Awal. Masha Allah.", tags: ["Wagma", "Juju"] },
+            { x: 920, date: "Oct 15", mood: "Grateful", text: "Thank you for all the family and friends.", tags: ["Wagma", "Juju"] },
+            { x: 980, date: "Dec 30", mood: "Content", text: "I’m feeling content with what we have built.", tags: ["Wagma", "Juju"] }
+        ];
+
+        const svg = document.getElementById('timeline-svg');
+        const nodeLayer = document.getElementById('node-layer');
+        const hud = document.getElementById('hud');
+        const masterPath = document.getElementById('master-path');
+
+        function createGrid() {
+            const gridG = document.getElementById('grid');
+            for(let i=0; i<=1000; i+=100) {
+                const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                l.setAttribute("x1", i); l.setAttribute("y1", 0);
+                l.setAttribute("x2", i); l.setAttribute("y2", 500);
+                l.setAttribute("stroke", "white");
+                gridG.appendChild(l);
+            }
+        }
+
+        function createNodes() {
+            timelineEntries.forEach((entry, idx) => {
+                const point = getPathYAtX(entry.x);
+                
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", entry.x);
+                circle.setAttribute("cy", point.y);
+                circle.setAttribute("r", "4");
+                circle.setAttribute("class", "data-node");
+                
+                // Set color based on section
+                let color = "var(--cyber-lime)";
+                if (entry.x > 700) color = "var(--acid-magenta)";
+                if (entry.x >= 820) color = "var(--solar-gold)";
+                
+                circle.setAttribute("fill", color);
+                
+                circle.addEventListener('mouseenter', (e) => showHUD(e, entry, color));
+                circle.addEventListener('mouseleave', hideHUD);
+                
+                nodeLayer.appendChild(circle);
+            });
+        }
+
+        function getPathYAtX(x) {
+            let low = 0;
+            let high = masterPath.getTotalLength();
+            while (low < high - 1) {
+                let mid = (low + high) / 2;
+                let p = masterPath.getPointAtLength(mid);
+                if (p.x < x) low = mid;
+                else high = mid;
+            }
+            return masterPath.getPointAtLength(low);
+        }
+
+        function showHUD(e, data, color) {
+            hud.style.display = 'block';
+            hud.style.opacity = '1';
+            hud.style.borderLeftColor = color;
+            document.getElementById('hud-date').innerText = data.date;
+            document.getElementById('hud-mood').innerText = data.mood;
+            document.getElementById('hud-mood').style.backgroundColor = color + '44';
+            document.getElementById('hud-text').innerText = `"${data.text}"`;
+            
+            const tagWagma = document.getElementById('tag-wagma');
+            const tagJuju = document.getElementById('tag-juju');
+            tagWagma.style.opacity = data.tags.includes("Wagma") ? "1" : "0.2";
+            tagJuju.style.opacity = data.tags.includes("Juju") ? "1" : "0.2";
+
+            moveHUD(e);
+        }
+
+        function moveHUD(e) {
+            const x = e.clientX + 20;
+            const y = e.clientY - 40;
+            hud.style.transform = `translate(${x}px, ${y}px)`;
+        }
+
+        function hideHUD() {
+            hud.style.opacity = '0';
+            setTimeout(() => { if(hud.style.opacity === '0') hud.style.display = 'none'; }, 200);
+        }
+
+        const liveQuote = document.getElementById('live-quote');
+        let quoteIdx = 0;
+        function cycleQuotes() {
+            liveQuote.style.opacity = 0;
+            setTimeout(() => {
+                liveQuote.innerText = `"${timelineEntries[quoteIdx].text}"`;
+                liveQuote.style.opacity = 1;
+                quoteIdx = (quoteIdx + 1) % timelineEntries.length;
+            }, 500);
+        }
+
+        window.onload = () => {
+            createGrid();
+            
+            const length = masterPath.getTotalLength();
+            masterPath.style.strokeDasharray = length;
+            masterPath.style.strokeDashoffset = length;
+            masterPath.getBoundingClientRect();
+            masterPath.style.transition = 'stroke-dashoffset 3s cubic-bezier(0.4, 0, 0.2, 1)';
+            masterPath.style.strokeDashoffset = '0';
+            
+            setTimeout(createNodes, 1000);
+            setInterval(cycleQuotes, 6000);
+            
+            window.addEventListener('mousemove', (e) => {
+                if(hud.style.display === 'block') moveHUD(e);
+            });
+        };
+    </script>
+</body>
+</html>
